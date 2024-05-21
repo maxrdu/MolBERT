@@ -48,7 +48,6 @@ class BaseMolbertApp(ABC):
 
         trainer = Trainer(
             default_root_dir=args.default_root_dir,
-            progress_bar_refresh_rate=args.progress_bar_refresh_rate,
             min_epochs=args.min_epochs,
             max_epochs=args.max_epochs,
             val_check_interval=args.val_check_interval,

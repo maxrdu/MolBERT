@@ -96,13 +96,6 @@ def get_default_parser():
         default=0,
         help='If set to 1: runs 1 batch of train, test and val to find any bugs ' '(ie: a sort of unit test).',
     )
-    parser.add_argument(
-        '--progress_bar_refresh_rate',
-        default=25,
-        type=int,
-        help='How often to refresh progress bar (in steps). Value ``0`` disables progress bar. '
-        'Ignored when a custom callback is passed to :paramref:`~Trainer.callbacks`.',
-    )
     parser.add_argument('--seed', default=42, type=int, help='Seed for random initialisation')
 
     return parser
