@@ -122,10 +122,13 @@ class FlexibleBertModel(BertPreTrainedModel):
 
 
 class MolbertModel(pl.LightningModule):
-    def __init__(self, args: Namespace, **kwargs):
+    def __init__(self, args: Namespace = None, **kwargs):
         super().__init__()
 
-        self.hparams.update(vars(args), **kwargs)
+        if args is not None:
+            self.hparams.update(vars(args))
+        elif kwargs:
+            self.hparams.update(kwargs)
 
         self._datasets = None
 
