@@ -45,10 +45,10 @@ def get_default_parser():
     )
     parser.add_argument('--gpus', type=int, default=0, help="How many GPUs to train on")
     parser.add_argument(
-        '--distributed_backend',
+        '--strategy',
         type=str,
         default=None,
-        help="The distributed backend to use (dp, ddp, ddp2, ddp_spawn, ddp_cpu)",
+        help="The training strategy to use e.g. ddp",
     )
     parser.add_argument(
         '--amp_level',
