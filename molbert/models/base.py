@@ -1,5 +1,6 @@
 import logging
 from abc import abstractmethod
+from argparse import Namespace
 from typing import Dict, Tuple
 
 import pytorch_lightning as pl
@@ -119,9 +120,10 @@ class FlexibleBertModel(BertPreTrainedModel):
 
 
 class MolbertModel(pl.LightningModule):
-    def __init__(self, **kwargs):
+    def __init__(self, args: Namespace, **kwargs):
         super().__init__()
-        self.hparams.update(kwargs)
+
+        self.hparams.update(vars(args), **kwargs)
 
         self._datasets = None
 
