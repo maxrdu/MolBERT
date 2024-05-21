@@ -175,7 +175,7 @@ class MolbertModel(pl.LightningModule):
         losses = self.evaluate_losses(batch_labels, y_hat)
         loss = torch.sum(torch.stack(list(losses.values())))
         tensorboard_logs = {f'{mode}_loss': loss, **losses}
-
+        self.log_dict(tensorboard_logs)
         outputs = {'loss': loss, f'{mode}_loss': loss, 'log': tensorboard_logs}
         if mode == "train":
             self.training_step_outputs.append(outputs)
@@ -193,6 +193,7 @@ class MolbertModel(pl.LightningModule):
         avg_loss = torch.stack([x['train_loss'] for x in self.training_step_outputs]).mean()
         tensorboard_logs = {'train_loss': avg_loss}
         self.training_step_outputs.clear()
+        self.log_dict(tensorboard_logs)
         return {'log': tensorboard_logs}
 
     def validation_step(self, batch: MolbertBatchType, batch_idx: int) -> Dict[str, torch.Tensor]:
@@ -203,6 +204,7 @@ class MolbertModel(pl.LightningModule):
         avg_loss = torch.stack([x['valid_loss'] for x in self.validation_step_outputs]).mean()
         tensorboard_logs = {'valid_loss': avg_loss}
         self.validation_step_outputs.clear()
+        self.log_dict(tensorboard_logs)
         return {'log': tensorboard_logs}
 
     def test_step(self, batch: MolbertBatchType, batch_idx: int) -> Dict[str, torch.Tensor]:
@@ -213,6 +215,7 @@ class MolbertModel(pl.LightningModule):
         avg_loss = torch.stack([x['test_loss'] for x in self.test_step_outputs]).mean()
         tensorboard_logs = {'test_loss': avg_loss}
         self.test_step_outputs.clear()
+        self.log_dict(tensorboard_logs)
         return {'log': tensorboard_logs}
 
     def evaluate_losses(self, batch_labels, batch_predictions):
