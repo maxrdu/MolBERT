@@ -62,7 +62,7 @@ class SuperPositionalBertEmbeddings(nn.Module):
         self.LayerNorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
-    def forward(self, input_ids, token_type_ids=None, position_ids=None, inputs_embeds=None):
+    def forward(self, input_ids, token_type_ids=None, position_ids=None, inputs_embeds=None, **kwargs):
         # do word embedding first to determine its type (float or half)
         words_embeddings = self.word_embeddings(input_ids)
 
@@ -91,7 +91,7 @@ class SuperPositionalBertModel(BertModel):
     """
 
     def __init__(self, config):
-        super(BertModel, self).__init__(config)
+        super().__init__(config)
 
         self.embeddings = SuperPositionalBertEmbeddings(config)
         self.encoder = BertEncoder(config)
