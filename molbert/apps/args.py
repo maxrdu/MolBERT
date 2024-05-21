@@ -50,13 +50,6 @@ def get_default_parser():
         default=None,
         help="The training strategy to use e.g. ddp",
     )
-    parser.add_argument(
-        '--amp_level',
-        type=str,
-        default='O2',
-        help="For fp16: Apex AMP optimization level selected in ['None', 'O0', 'O1', 'O2', and 'O3']."
-        "See details at https://nvidia.github.io/apex/amp.html",
-    )
     parser.add_argument('--precision', type=int, default=32, help="Full precision (32), half precision (16).")
     parser.add_argument('--num_nodes', type=int, default=1, help="Number of GPU nodes for distributed training")
     parser.add_argument(

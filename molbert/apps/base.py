@@ -55,7 +55,6 @@ class BaseMolbertApp(ABC):
             devices=args.gpus,
             strategy=args.strategy,
             row_log_interval=1,
-            amp_level=args.amp_level,
             precision=args.precision,
             num_nodes=args.num_nodes,
             tpu_cores=args.tpu_cores,
