@@ -61,7 +61,7 @@ class MolBertFeaturizer:
         self.featurizer = self.load_featurizer(config_dict)
 
         # load model
-        self.config = Namespace(config_dict)
+        self.config = Namespace(**config_dict)
         self.model = SmilesMolbertModel.load_from_checkpoint(
             self.checkpoint_path, hparams_file=self.hparams_path
          )
