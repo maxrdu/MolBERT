@@ -103,7 +103,8 @@ class MolBertFeaturizer:
 
         with torch.no_grad():
             outputs = self.model.model.bert(
-                input_ids=input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask
+                input_ids=input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask,
+                output_hidden_states=self.output_all, return_dict=False
             )
 
         if self.output_all:
