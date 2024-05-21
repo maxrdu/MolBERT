@@ -63,7 +63,7 @@ def test_smiles_dataset_physchem(data_path, featurizer):  # noqa: F811
     assert inputs['attention_mask'].shape == (max_len,)
     assert labels['lm_label_ids'].shape == (max_len,)
     assert labels['unmasked_lm_label_ids'].shape == (max_len,)
-    assert labels['physchem_props'].shape == (num_physchem,)
+    assert labels['physchem_props'].shape == (len(dataset.physchem_featurizer.descriptors),)
 
 
 def test_finetune_dataset(finetune_data_path, featurizer):  # noqa: F811

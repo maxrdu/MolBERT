@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import warnings
 from abc import abstractmethod, ABC
 from typing import List, Tuple, Dict, Sequence, Optional
 
@@ -152,6 +153,19 @@ class PhysChemFeaturizer(RDKitFeaturizer):
 
         with open(distributions_path) as fp:
             self.distributions = json.load(fp)
+
+        # Since the original publication, some descriptors have been remove, others have been added
+        difference = set(self.descriptors) ^ set(self.distributions.keys())
+        if difference:
+            warnings.warn(f"Descriptors/Distributions found that are not in the descriptor list or"
+                          f"have no distribution information. {difference} are ignored.")
+            overlap = set(self.descriptors) & set(self.distributions.keys())
+            self.descriptors = list(overlap)
+            # Filter accordingly
+            self.distributions = {k: v for k, v in self.distributions.items() if k in overlap}
+            self.calc = MolecularDescriptorCalculator(self.descriptors, **self.fingerprint_extra_args)
+
+        assert len(self.descriptors) == len(self.distributions.keys())
 
         if self.normalise:
             self.scaler = PhyschemScaler(descriptor_list=self.descriptors, dists=self.distributions)
