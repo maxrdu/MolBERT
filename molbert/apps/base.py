@@ -57,10 +57,9 @@ class BaseMolbertApp(ABC):
             precision=args.precision,
             num_nodes=args.num_nodes,
             accumulate_grad_batches=args.accumulate_grad_batches,
-            checkpoint_callback=checkpoint_callback,
             resume_from_checkpoint=args.resume_from_checkpoint,
             fast_dev_run=args.fast_dev_run,
-            callbacks=[lr_logger],
+            callbacks=[lr_logger, checkpoint_callback],
         )
 
         model = self.get_model(args)
