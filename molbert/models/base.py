@@ -1,6 +1,5 @@
 import logging
 from abc import abstractmethod
-from argparse import Namespace
 from typing import Dict, Tuple
 
 import pytorch_lightning as pl
@@ -17,8 +16,10 @@ from transformers import (
     BertPreTrainedModel,
     BertModel,
 )
-from transformers.modeling_bert import BertEncoder, BertPooler
-from transformers.modeling_transfo_xl import PositionalEmbedding
+from transformers.models.bert.modeling_bert import BertEncoder, BertPooler
+from transformers.models.deprecated.transfo_xl.modeling_transfo_xl import (
+    PositionalEmbedding,
+)
 
 from molbert.datasets.dataloading import MolbertDataLoader
 
@@ -118,9 +119,9 @@ class FlexibleBertModel(BertPreTrainedModel):
 
 
 class MolbertModel(pl.LightningModule):
-    def __init__(self, args: Namespace):
+    def __init__(self, **kwargs):
         super().__init__()
-        self.hparams = args
+        self.hparams.update(kwargs)
 
         self._datasets = None
 

@@ -5,7 +5,7 @@ from typing import List, Dict
 
 import numpy as np
 import torch
-from pytorch_lightning.metrics import RMSE, MSE, AUROC, AveragePrecision, Accuracy, MAE
+from torchmetrics import MeanSquaredError, AUROC, AveragePrecision, Accuracy, MeanAbsoluteError
 from sklearn.metrics import r2_score
 from torch import nn
 from torch.utils.data import DataLoader
@@ -106,15 +106,15 @@ class FinetuneSmilesMolbertModel(MolbertModel):
 
         if self.hparams.mode == 'classification':
             metrics = {
-                'AUROC': lambda: AUROC()(probs_of_positive_class, batch_labels),
-                'AveragePrecision': lambda: AveragePrecision()(probs_of_positive_class, batch_labels),
-                'Accuracy': lambda: Accuracy()(preds, batch_labels),
+                'AUROC': lambda: AUROC("multiclass")(probs_of_positive_class, batch_labels),
+                'AveragePrecision': lambda: AveragePrecision("multiclass")(probs_of_positive_class, batch_labels),
+                'Accuracy': lambda: Accuracy("multiclass")(preds, batch_labels),
             }
         else:
             metrics = {
-                'MAE': lambda: MAE()(preds, batch_labels),
-                'RMSE': lambda: RMSE()(preds, batch_labels),
-                'MSE': lambda: MSE()(preds, batch_labels),
+                'MAE': lambda: MeanAbsoluteError()(preds, batch_labels),
+                'RMSE': lambda: MeanSquaredError(squared=False)(preds, batch_labels),
+                'MSE': lambda: MeanSquaredError()(preds, batch_labels),
                 # sklearn metrics work the other way round metric_fn(y_true, y_pred)
                 'R2': lambda: r2_score(batch_labels.cpu(), preds.cpu()),
             }

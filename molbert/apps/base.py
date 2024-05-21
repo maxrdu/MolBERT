@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 
 import torch
 from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import LearningRateLogger
+from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 from molbert.apps.args import get_default_parser
@@ -44,7 +44,7 @@ class BaseMolbertApp(ABC):
 
         logger.info(args)
 
-        lr_logger = LearningRateLogger()
+        lr_logger = LearningRateMonitor()
 
         trainer = Trainer(
             default_root_dir=args.default_root_dir,
