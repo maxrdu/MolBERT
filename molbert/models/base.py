@@ -134,6 +134,11 @@ class MolbertModel(pl.LightningModule):
 
         self.model = FlexibleBertModel(self.config, nn.ModuleList(self.tasks))
 
+        # For on_*_epoch_end stuff
+        self.training_step_outputs = []
+        self.validation_step_outputs = []
+        self.test_step_outputs = []
+
     def forward(self, batch_inputs: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         """
         Performs one forward step for the model.
@@ -168,33 +173,44 @@ class MolbertModel(pl.LightningModule):
         losses = self.evaluate_losses(batch_labels, y_hat)
         loss = torch.sum(torch.stack(list(losses.values())))
         tensorboard_logs = {f'{mode}_loss': loss, **losses}
-        return {'loss': loss, f'{mode}_loss': loss, 'log': tensorboard_logs}
+
+        outputs = {'loss': loss, f'{mode}_loss': loss, 'log': tensorboard_logs}
+        if mode == "train":
+            self.training_step_outputs.append(outputs)
+        elif mode == "valid":
+            self.validation_step_outputs.append(outputs)
+        elif mode == "test":
+            self.test_step_outputs.append(outputs)
+        return outputs
 
     def training_step(self, batch: MolbertBatchType, batch_idx: int) -> Dict[str, torch.Tensor]:
         return self.step(batch, 'train')
 
-    def training_epoch_end(self, outputs) -> Dict[str, Dict[str, torch.Tensor]]:
+    def on_train_epoch_end(self) -> Dict[str, Dict[str, torch.Tensor]]:
         # OPTIONAL
-        avg_loss = torch.stack([x['train_loss'] for x in outputs]).mean()
+        avg_loss = torch.stack([x['train_loss'] for x in self.training_step_outputs]).mean()
         tensorboard_logs = {'train_loss': avg_loss}
+        self.training_step_outputs.clear()
         return {'log': tensorboard_logs}
 
     def validation_step(self, batch: MolbertBatchType, batch_idx: int) -> Dict[str, torch.Tensor]:
         return self.step(batch, 'valid')
 
-    def validation_epoch_end(self, outputs) -> Dict[str, Dict[str, torch.Tensor]]:
+    def on_validation_epoch_end(self) -> Dict[str, Dict[str, torch.Tensor]]:
         # OPTIONAL
-        avg_loss = torch.stack([x['valid_loss'] for x in outputs]).mean()
+        avg_loss = torch.stack([x['valid_loss'] for x in self.validation_step_outputs]).mean()
         tensorboard_logs = {'valid_loss': avg_loss}
+        self.validation_step_outputs.clear()
         return {'log': tensorboard_logs}
 
     def test_step(self, batch: MolbertBatchType, batch_idx: int) -> Dict[str, torch.Tensor]:
         return self.step(batch, 'test')
 
-    def test_epoch_end(self, outputs) -> Dict[str, Dict[str, torch.Tensor]]:
+    def on_test_epoch_end(self) -> Dict[str, Dict[str, torch.Tensor]]:
         # OPTIONAL
-        avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
+        avg_loss = torch.stack([x['test_loss'] for x in self.test_step_outputs]).mean()
         tensorboard_logs = {'test_loss': avg_loss}
+        self.test_step_outputs.clear()
         return {'log': tensorboard_logs}
 
     def evaluate_losses(self, batch_labels, batch_predictions):
