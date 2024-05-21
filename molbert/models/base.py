@@ -135,6 +135,7 @@ class MolbertModel(pl.LightningModule):
             raise ValueError('You did not specify any tasks... exiting.')
 
         self.model = FlexibleBertModel(self.config, nn.ModuleList(self.tasks))
+        self.save_hyperparameters(self.hparams)
 
         # For on_*_epoch_end stuff
         self.training_step_outputs = []
