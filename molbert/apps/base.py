@@ -57,7 +57,6 @@ class BaseMolbertApp(ABC):
             precision=args.precision,
             num_nodes=args.num_nodes,
             accumulate_grad_batches=args.accumulate_grad_batches,
-            resume_from_checkpoint=args.resume_from_checkpoint,
             fast_dev_run=args.fast_dev_run,
             callbacks=[lr_logger, checkpoint_callback],
         )
@@ -66,7 +65,7 @@ class BaseMolbertApp(ABC):
         logger.info(f'Start Training model {model}')
 
         logger.info('')
-        trainer.fit(model)
+        trainer.fit(model, ckpt_path=args.resume_from_checkpoint)
         logger.info('Training loop finished.')
 
         return trainer
