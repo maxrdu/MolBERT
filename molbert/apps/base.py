@@ -52,7 +52,7 @@ class BaseMolbertApp(ABC):
             max_epochs=args.max_epochs,
             val_check_interval=args.val_check_interval,
             limit_val_batches=args.limit_val_batches,
-            devices=args.gpus,
+            devices="auto" if args.gpus == 0 else args.gpus,
             strategy=args.strategy,
             precision=args.precision,
             num_nodes=args.num_nodes,

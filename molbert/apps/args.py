@@ -47,7 +47,7 @@ def get_default_parser():
     parser.add_argument(
         '--strategy',
         type=str,
-        default=None,
+        default="auto",
         help="The training strategy to use e.g. ddp",
     )
     parser.add_argument('--precision', type=int, default=32, help="Full precision (32), half precision (16).")
