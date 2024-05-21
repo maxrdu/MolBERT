@@ -112,9 +112,11 @@ class FlexibleBertModel(BertPreTrainedModel):
         self.tasks = tasks
 
     def forward(self, input_ids, token_type_ids, attention_mask):
-        sequence_output, pooled_output = self.bert(
+        outputs = self.bert(
             input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask
         )
+        sequence_output = outputs.last_hidden_state
+        pooled_output = outputs.pooler_output
 
         return {task.name: task(sequence_output, pooled_output) for task in self.tasks}
 
