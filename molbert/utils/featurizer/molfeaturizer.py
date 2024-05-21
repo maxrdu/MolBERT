@@ -154,10 +154,10 @@ class PhysChemFeaturizer(RDKitFeaturizer):
         with open(distributions_path) as fp:
             self.distributions = json.load(fp)
 
-        # Since the original publication, some descriptors have been remove, others have been added
+        # Since the original publication, some descriptors have been removed, others have been added
         difference = set(self.descriptors) ^ set(self.distributions.keys())
         if difference:
-            warnings.warn(f"Descriptors/Distributions found that are not in the descriptor list or"
+            warnings.warn(f"Descriptors/Distributions found that are not in the descriptor list or "
                           f"have no distribution information. {difference} are ignored.")
             overlap = set(self.descriptors) & set(self.distributions.keys())
             self.descriptors = list(overlap)
@@ -171,37 +171,59 @@ class PhysChemFeaturizer(RDKitFeaturizer):
             self.scaler = PhyschemScaler(descriptor_list=self.descriptors, dists=self.distributions)
 
     @staticmethod
-    def get_descriptor_subset(subset: str, subset_size: int) -> List[str]:
+    def _get_descriptor_subset_all(subset: str, subset_size: int) -> List[str]:
         if subset == 'all':
-            return PhysChemFeaturizer.get_all_descriptor_names()[:subset_size]
+            return PhysChemFeaturizer.get_all_descriptor_names()
         elif subset == 'simple':
-            return PhysChemFeaturizer.get_simple_descriptor_subset()[:subset_size]
+            return PhysChemFeaturizer.get_simple_descriptor_subset()
         elif subset == 'uncorrelated':
-            return PhysChemFeaturizer.get_uncorrelated_descriptor_subset(subset_size)
+            return PhysChemFeaturizer.get_uncorrelated_descriptor_subset()
         elif subset == 'fragment':
-            return PhysChemFeaturizer.get_fragment_descriptor_subset()[:subset_size]
+            return PhysChemFeaturizer.get_fragment_descriptor_subset()
         elif subset == 'graph':
-            return PhysChemFeaturizer.get_graph_descriptor_subset()[:subset_size]
+            return PhysChemFeaturizer.get_graph_descriptor_subset()
         elif subset == 'surface':
-            return PhysChemFeaturizer.get_surface_descriptor_subset()[:subset_size]
+            return PhysChemFeaturizer.get_surface_descriptor_subset()
         elif subset == 'druglikeness':
-            return PhysChemFeaturizer.get_druglikeness_descriptor_subset()[:subset_size]
+            return PhysChemFeaturizer.get_druglikeness_descriptor_subset()
         elif subset == 'logp':
-            return PhysChemFeaturizer.get_logp_descriptor_subset()[:subset_size]
+            return PhysChemFeaturizer.get_logp_descriptor_subset()
         elif subset == 'refractivity':
-            return PhysChemFeaturizer.get_refractivity_descriptor_subset()[:subset_size]
+            return PhysChemFeaturizer.get_refractivity_descriptor_subset()
         elif subset == 'estate':
-            return PhysChemFeaturizer.get_estate_descriptor_subset()[:subset_size]
+            return PhysChemFeaturizer.get_estate_descriptor_subset()
         elif subset == 'charge':
-            return PhysChemFeaturizer.get_charge_descriptor_subset()[:subset_size]
+            return PhysChemFeaturizer.get_charge_descriptor_subset()
         elif subset == 'general':
-            return PhysChemFeaturizer.get_general_descriptor_subset()[:subset_size]
+            return PhysChemFeaturizer.get_general_descriptor_subset()
         else:
             raise ValueError(
                 f'Unrecognised descriptor subset: {subset} (should be "all", "simple",'
                 f'"uncorrelated", "fragment", "graph", "logp", "refractivity",'
                 f'"estate", "druglikeness", "surface", "charge", "general").'
             )
+
+    @staticmethod
+    def get_descriptor_subset(subset: str, subset_size: int) -> List[str]:
+        subset = PhysChemFeaturizer._get_descriptor_subset_all(subset, subset_size)
+
+        distributions_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), '../data/physchem_distributions.json'
+        )
+
+        with open(distributions_path) as fp:
+            distributions = json.load(fp)
+
+        # Since the original publication, some descriptors have been removed, others have been added
+        difference = set(subset) ^ set(distributions.keys())
+        if difference:
+            warnings.warn(f"Descriptors/Distributions found that are not in the descriptor list or "
+                          f"have no distribution information. {difference} are ignored.")
+            overlap = set(subset) & set(distributions.keys())
+            return [d for d in subset if d in overlap][:subset_size]  # Set is unordered, may change thus we use a list
+        else:
+            return subset[:subset_size]
+
 
     @property
     def output_size(self):
@@ -608,7 +630,7 @@ class PhysChemFeaturizer(RDKitFeaturizer):
         ]
 
     @staticmethod
-    def get_uncorrelated_descriptor_subset(subset_size: int) -> List[str]:
+    def get_uncorrelated_descriptor_subset() -> List[str]:
         """
         Column names are sorted starting with the non-informative descriptors, then the rest are ordered
         from most correlated to least correlated. This will return the n least correlated descriptors.
@@ -822,7 +844,9 @@ class PhysChemFeaturizer(RDKitFeaturizer):
             'PEOE_VSA11',
         ]
 
-        return columns_sorted_by_correlation[-subset_size:]
+        # Return in reverse order such that [:subset_size]
+        # returns the correct descriptors
+        return columns_sorted_by_correlation[::-1]
 
     @staticmethod
     def _get_descriptor_list(

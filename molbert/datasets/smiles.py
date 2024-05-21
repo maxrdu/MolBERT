@@ -32,6 +32,9 @@ class BertSmilesDataset(BaseBertDataset):
         if self.num_physchem > 0:
             descriptor_list = PhysChemFeaturizer.get_descriptor_subset(named_descriptor_set, self.num_physchem)
             self.physchem_featurizer = PhysChemFeaturizer(descriptors=descriptor_list, normalise=True)
+            # Because the distribution file and descriptors may not match exactly
+            # We change the number of descriptors to that, that is used.
+            self.num_physchem = len(self.physchem_featurizer.descriptors)
 
     def calculate_physchem_props(self, smiles: str):
         physchem, valid = self.physchem_featurizer.transform_single(smiles)
