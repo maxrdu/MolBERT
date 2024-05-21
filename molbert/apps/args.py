@@ -52,12 +52,6 @@ def get_default_parser():
     )
     parser.add_argument('--precision', type=int, default=32, help="Full precision (32), half precision (16).")
     parser.add_argument('--num_nodes', type=int, default=1, help="Number of GPU nodes for distributed training")
-    parser.add_argument(
-        '--tpu_cores',
-        type=str,
-        default=None,
-        help="How many TPU cores to train on (1 or 8) / Single TPU to train on [1]",
-    )
     parser.add_argument('--masked_lm', default=1, type=int, help='Whether to use the masked lm task.')
     parser.add_argument('--tiny', action='store_true', help='Tiny model for debugging')
     parser.add_argument(
