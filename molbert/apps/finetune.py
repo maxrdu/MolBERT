@@ -119,6 +119,12 @@ class FinetuneSmilesMolbertApp(BaseMolbertApp):
             help='Number of task output dimensions. 1 for regression, n_classes for classification',
         )
         parser.add_argument(
+            "--wandb",
+            action="store_true",
+            default=False,
+            help="Activates logging to Weights and Biases"
+        )
+        parser.add_argument(
             '--freeze_level',
             type=int,
             default=0,

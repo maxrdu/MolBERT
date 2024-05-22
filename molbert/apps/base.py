@@ -7,6 +7,7 @@ import torch
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import WandbLogger
 
 from molbert.apps.args import get_default_parser
 from molbert.models.base import MolbertModel
@@ -59,6 +60,7 @@ class BaseMolbertApp(ABC):
             accumulate_grad_batches=args.accumulate_grad_batches,
             fast_dev_run=args.fast_dev_run,
             callbacks=[lr_logger, checkpoint_callback],
+            logger=WandbLogger() if args.wandb else None
         )
 
         model = self.get_model(args)
