@@ -100,15 +100,15 @@ class FinetuneSmilesMolbertModel(MolbertModel):
             probs = nn.Softmax(dim=1)(batch_predictions)
             preds = torch.argmax(probs, dim=1).squeeze()
             probs_of_positive_class = probs[:, 1]
-            batch_labels = batch_labels.squeeze()
+            batch_labels = batch_labels.long().squeeze()
         else:
             preds = batch_predictions
 
         if self.hparams.mode == 'classification':
             metrics = {
-                'AUROC': lambda: AUROC("multiclass")(probs_of_positive_class, batch_labels),
-                'AveragePrecision': lambda: AveragePrecision("multiclass")(probs_of_positive_class, batch_labels),
-                'Accuracy': lambda: Accuracy("multiclass")(preds, batch_labels),
+                'AUROC': lambda: AUROC("binary").to(preds.device)(probs_of_positive_class, batch_labels),
+                'AveragePrecision': lambda: AveragePrecision("binary").to(preds.device)(probs_of_positive_class, batch_labels),
+                'Accuracy': lambda: Accuracy("binary").to(preds.device)(preds, batch_labels),
             }
         else:
             metrics = {
@@ -142,12 +142,15 @@ class FinetuneSmilesMolbertModel(MolbertModel):
         """
         (batch_inputs, batch_labels), _ = batch
         y_hat = self.forward(batch_inputs)
+        outputs = dict(predictions=y_hat, labels=batch_labels)
+        self.test_step_outputs.append(outputs)
 
-        return dict(predictions=y_hat, labels=batch_labels)
+        return outputs
 
-    def test_epoch_end(
-        self, outputs: List[Dict[str, Dict[str, torch.Tensor]]]
+    def on_test_epoch_end(
+        self,
     ) -> Dict[str, Dict[str, torch.Tensor]]:  # type: ignore
+        outputs: List[Dict[str, Dict[str, torch.Tensor]]] = self.test_step_outputs
         all_predictions = torch.cat([out['predictions']['finetune'] for out in outputs])
         all_predictions_dict = dict(finetune=all_predictions)
         all_labels = torch.cat([out['labels']['finetune'] for out in outputs])
@@ -165,6 +168,9 @@ class FinetuneSmilesMolbertModel(MolbertModel):
         logger.info(metrics)
         with open(metrics_path, 'w') as f:
             json.dump(metrics, f, indent=4)
+
+        self.log_dict(tensorboard_logs)
+        self.test_step_outputs.clear()
         return {'loss': loss, 'metrics': metrics, 'test_loss': loss, 'log': tensorboard_logs}  # type: ignore
 
     def test_dataloader(self) -> DataLoader:
