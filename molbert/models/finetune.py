@@ -5,10 +5,9 @@ from typing import List, Dict
 
 import numpy as np
 import torch
-from torchmetrics import MeanSquaredError, AUROC, AveragePrecision, Accuracy, MeanAbsoluteError
-from sklearn.metrics import r2_score
 from torch import nn
 from torch.utils.data import DataLoader
+from torchmetrics import MeanSquaredError, AUROC, AveragePrecision, Accuracy, MeanAbsoluteError, R2Score, F1Score
 
 from molbert.datasets.dataloading import MolbertDataLoader
 from molbert.datasets.finetune import BertFinetuneSmilesDataset
@@ -109,14 +108,14 @@ class FinetuneSmilesMolbertModel(MolbertModel):
                 'AUROC': lambda: AUROC("binary").to(preds.device)(probs_of_positive_class, batch_labels),
                 'AveragePrecision': lambda: AveragePrecision("binary").to(preds.device)(probs_of_positive_class, batch_labels),
                 'Accuracy': lambda: Accuracy("binary").to(preds.device)(preds, batch_labels),
+                'F1': lambda: F1Score("binary").to(preds.device)(preds, batch_labels),
             }
         else:
             metrics = {
-                'MAE': lambda: MeanAbsoluteError()(preds, batch_labels),
-                'RMSE': lambda: MeanSquaredError(squared=False)(preds, batch_labels),
-                'MSE': lambda: MeanSquaredError()(preds, batch_labels),
-                # sklearn metrics work the other way round metric_fn(y_true, y_pred)
-                'R2': lambda: r2_score(batch_labels.cpu(), preds.cpu()),
+                'MAE': lambda: MeanAbsoluteError().to(preds.device)(preds, batch_labels),
+                'RMSE': lambda: MeanSquaredError(squared=False).to(preds.device)(preds, batch_labels),
+                'MSE': lambda: MeanSquaredError().to(preds.device)(preds, batch_labels),
+                'R2': lambda: R2Score().to(preds.device)(preds, batch_labels),
             }
 
         out = {}
@@ -161,6 +160,7 @@ class FinetuneSmilesMolbertModel(MolbertModel):
 
         # add metrics to the test set evaluation
         metrics = self.evaluate_metrics(all_labels_dict['finetune'], all_predictions_dict['finetune'])
+        self.log_dict(metrics)
 
         tensorboard_logs = {'test_loss': loss, **losses}
         metrics_path = os.path.join(os.path.dirname(self.trainer.ckpt_path), 'metrics.json')
