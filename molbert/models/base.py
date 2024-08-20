@@ -18,9 +18,6 @@ from transformers import (
     BertModel,
 )
 from transformers.models.bert.modeling_bert import BertEncoder, BertPooler
-from transformers.models.deprecated.transfo_xl.modeling_transfo_xl import (
-    PositionalEmbedding,
-)
 
 from molbert.datasets.dataloading import MolbertDataLoader
 
@@ -28,6 +25,29 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 MolbertBatchType = Tuple[Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]], torch.Tensor]
+
+
+class PositionalEmbedding(nn.Module):
+    # Copied from
+    # https://github.com/huggingface/transformers/blob/fd06ad5438249a055d0b2fd2fc2567d8265a7e4b/src/transformers/models/deprecated/transfo_xl/modeling_transfo_xl.py#L174C1-L190C39
+    # Will be deprecated in future versions of huggingface transformers thus keeping it here directly
+    # is the safer choice
+    def __init__(self, demb):
+        super().__init__()
+
+        self.demb = demb
+
+        inv_freq = 1 / (10000 ** (torch.arange(0.0, demb, 2.0) / demb))
+        self.register_buffer("inv_freq", inv_freq)
+
+    def forward(self, pos_seq, bsz=None):
+        sinusoid_inp = torch.outer(pos_seq, self.inv_freq)
+        pos_emb = torch.cat([sinusoid_inp.sin(), sinusoid_inp.cos()], dim=-1)
+
+        if bsz is not None:
+            return pos_emb[:, None, :].expand(-1, bsz, -1)
+        else:
+            return pos_emb[:, None, :]
 
 
 class SuperPositionalEmbedding(PositionalEmbedding):
