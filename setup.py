@@ -35,7 +35,6 @@ setup(
         "pytorch-lightning>=0.8.4",
         "scikit-learn>=0.21.3",
         "scipy>=1.3.1",
-        "transformers>=3.5.1",
         "torch>=1.4.0",
         "torchmetrics>=1.4.0"
     ],
